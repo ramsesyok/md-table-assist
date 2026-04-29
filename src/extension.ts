@@ -7,8 +7,12 @@ import { buildReplacement } from './markdown-document/replaceBlock';
 import { generateTableId } from './markdown-document/generateTableId';
 import { parseSpantable } from './formats/spantable/parseSpantable';
 import { serializeSpantable } from './formats/spantable/serializeSpantable';
+import { parsePipeTable } from './formats/pipeTable/parsePipeTable';
+import { serializePipeTable } from './formats/pipeTable/serializePipeTable';
+import { parseMdxSpanner } from './formats/mdxSpanner/parseMdxSpanner';
+import { serializeMdxSpanner } from './formats/mdxSpanner/serializeMdxSpanner';
 import { normalizeTableModel } from './model/normalizeTableModel';
-import type { TableModel } from './model/TableModel';
+import type { TableModel, TableFormat } from './model/TableModel';
 import type { WebviewToExtensionMessage, ExtensionToWebviewMessage } from './model/WebviewMessages';
 
 // Inlined by esbuild loader: { '.html': 'text' }
@@ -21,6 +25,7 @@ interface PanelState {
   sourceEnd: number;
   mode: EditMode;
   tableId: string;
+  format: TableFormat;
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -50,21 +55,40 @@ function openTableEditor(context: vscode.ExtensionContext): void {
     // Priority 1: cursor inside a table-editor comment block
     const commentBlock = findTableEditorBlock(docText, cursorOffset);
     if (commentBlock) {
-      if (commentBlock.format !== 'spantable') {
+      const fmt = commentBlock.format as TableFormat;
+      let parsed: TableModel;
+      if (fmt === 'spantable') {
+        try {
+          parsed = parseSpantable(commentBlock.innerContent, commentBlock.id);
+        } catch (e) {
+          vscode.window.showErrorMessage(`Failed to parse spantable: ${String(e)}`);
+          return;
+        }
+      } else if (fmt === 'pipeTable') {
+        const result = parsePipeTable(commentBlock.innerContent, commentBlock.id);
+        if (!result.ok) {
+          vscode.window.showErrorMessage(`Failed to parse pipeTable: ${result.message}`);
+          return;
+        }
+        parsed = result.value;
+      } else if (fmt === 'mdxSpanner') {
+        const result = parseMdxSpanner(commentBlock.innerContent, commentBlock.id);
+        if (!result.ok) {
+          vscode.window.showErrorMessage(`Failed to parse mdxSpanner: ${result.message}`);
+          return;
+        }
+        parsed = result.value;
+      } else {
         vscode.window.showErrorMessage(`Unsupported table format: "${commentBlock.format}"`);
         return;
       }
-      try {
-        table = normalizeTableModel(parseSpantable(commentBlock.innerContent, commentBlock.id));
-      } catch (e) {
-        vscode.window.showErrorMessage(`Failed to parse spantable: ${String(e)}`);
-        return;
-      }
+      table = normalizeTableModel(parsed);
       state = {
         sourceStart: commentBlock.startOffset,
         sourceEnd: commentBlock.endOffset,
         mode: 'comment-block',
-        tableId: commentBlock.id
+        tableId: commentBlock.id,
+        format: fmt
       };
     } else {
       // Priority 2: cursor near a plain ::spantable:: block
@@ -81,7 +105,8 @@ function openTableEditor(context: vscode.ExtensionContext): void {
           sourceStart: plainBlock.startOffset,
           sourceEnd: plainBlock.endOffset,
           mode: 'plain-spantable',
-          tableId: table.id
+          tableId: table.id,
+          format: 'spantable'
         };
       } else {
         // Priority 3: new empty table
@@ -91,7 +116,8 @@ function openTableEditor(context: vscode.ExtensionContext): void {
           sourceStart: cursorOffset,
           sourceEnd: cursorOffset,
           mode: 'new',
-          tableId: newId
+          tableId: newId,
+          format: 'spantable'
         };
       }
     }
@@ -133,7 +159,6 @@ function createWebviewPanel(
 
   panel.webview.html = buildHtml(nonce, scriptUri.toString(), styleUri.toString(), panel.webview.cspSource);
 
-  // Wait for webview ready signal before sending data
   let ready = false;
   const pendingMessages: ExtensionToWebviewMessage[] = [];
 
@@ -178,16 +203,32 @@ function handleApply(
   document: vscode.TextDocument,
   panel: vscode.WebviewPanel
 ): void {
-  const serialized = serializeSpantable(table);
-  const wrapped = wrapWithComments(table.id, serialized);
+  let serialized: string;
+  const fmt = table.format;
 
+  if (fmt === 'spantable') {
+    serialized = serializeSpantable(table);
+  } else if (fmt === 'pipeTable') {
+    const result = serializePipeTable(table);
+    if (!result.ok) {
+      vscode.window.showErrorMessage(result.message);
+      return;
+    }
+    serialized = result.value;
+  } else if (fmt === 'mdxSpanner') {
+    serialized = serializeMdxSpanner(table);
+  } else {
+    vscode.window.showErrorMessage(`Unsupported format for saving: "${fmt}"`);
+    return;
+  }
+
+  const wrapped = wrapWithComments(table.id, fmt, serialized);
   const docText = document.getText();
 
-  let startOffset = state.sourceStart;
-  let endOffset = state.sourceEnd;
+  const startOffset = state.sourceStart;
+  const endOffset = state.sourceEnd;
 
   if (state.mode === 'new') {
-    // Insert at cursor position as new content
     const edit = new vscode.WorkspaceEdit();
     const insertPos = document.positionAt(cursorInsertPosition(docText, startOffset));
     edit.insert(document.uri, insertPos, '\n' + wrapped + '\n');
@@ -239,9 +280,9 @@ function buildHtml(nonce: string, scriptUri: string, styleUri: string, cspSource
     .replace(/\{\{cspSource\}\}/g, cspSource);
 }
 
-function wrapWithComments(id: string, content: string): string {
+function wrapWithComments(id: string, format: TableFormat, content: string): string {
   return [
-    `<!-- table-editor:start id="${id}" format="spantable" version="1" -->`,
+    `<!-- table-editor:start id="${id}" format="${format}" version="1" -->`,
     '',
     content,
     '',
@@ -264,6 +305,7 @@ function makeEmptyTable(id: string): TableModel {
     id,
     format: 'spantable',
     version: 1,
+    columns: [{}, {}, {}],
     rows: [
       [{ id: 'r0c0', text: '', row: 0, col: 0, rowspan: 1, colspan: 1, hidden: false },
        { id: 'r0c1', text: '', row: 0, col: 1, rowspan: 1, colspan: 1, hidden: false },
@@ -279,7 +321,6 @@ function makeEmptyTable(id: string): TableModel {
 }
 
 function cursorInsertPosition(docText: string, offset: number): number {
-  // Insert after the current line
   const nextNewline = docText.indexOf('\n', offset);
   return nextNewline === -1 ? docText.length : nextNewline;
 }

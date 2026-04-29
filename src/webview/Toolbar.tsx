@@ -1,11 +1,14 @@
 import React from 'react';
+import type { TableFormat } from '../model/TableModel';
 
 interface ToolbarProps {
   caption: string;
   className: string;
+  format: TableFormat;
   showPreview: boolean;
   onCaptionChange: (v: string) => void;
   onClassNameChange: (v: string) => void;
+  onFormatChange: (fmt: TableFormat) => void;
   onAddRow: () => void;
   onDeleteRow: () => void;
   onAddCol: () => void;
@@ -97,9 +100,15 @@ const ApplyIcon = () => (
   </svg>
 );
 
+const FORMAT_OPTIONS: { value: TableFormat; label: string }[] = [
+  { value: 'spantable', label: 'spantable' },
+  { value: 'pipeTable', label: 'pipeTable' },
+  { value: 'mdxSpanner', label: 'mdxSpanner' }
+];
+
 export function Toolbar({
-  caption, className, showPreview, errorMsg,
-  onCaptionChange, onClassNameChange,
+  caption, className, format, showPreview, errorMsg,
+  onCaptionChange, onClassNameChange, onFormatChange,
   onAddRow, onDeleteRow, onAddCol, onDeleteCol,
   onMerge, onUnmerge, onTogglePreview, onApply
 }: ToolbarProps): React.ReactElement {
@@ -124,6 +133,17 @@ export function Toolbar({
               onChange={e => onClassNameChange(e.target.value)}
               placeholder="CSS class"
             />
+          </div>
+          <div className="toolbar-group">
+            <label>Format:</label>
+            <select
+              value={format}
+              onChange={e => onFormatChange(e.target.value as TableFormat)}
+            >
+              {FORMAT_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
         </div>
 

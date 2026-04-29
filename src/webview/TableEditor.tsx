@@ -1,10 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import type { TableModel, TableCell } from '../model/TableModel';
+import type { TableModel, TableCell, TableFormat, CellAlign } from '../model/TableModel';
 import { mergeCells } from '../model/mergeCells';
 import { unmergeCell } from '../model/unmergeCell';
 import { normalizeTableModel } from '../model/normalizeTableModel';
 import { parseTsv } from '../model/parseTsv';
 import { serializeSpantable } from '../formats/spantable/serializeSpantable';
+import { serializePipeTable } from '../formats/pipeTable/serializePipeTable';
+import { serializeMdxSpanner } from '../formats/mdxSpanner/serializeMdxSpanner';
 import { CellView } from './CellView';
 import { Toolbar } from './Toolbar';
 
@@ -28,7 +30,19 @@ function makeEmptyTable(): TableModel {
     }
     rows.push(row);
   }
-  return { id: '', format: 'spantable', version: 1, rows };
+  return { id: '', format: 'spantable', version: 1, columns: [{}, {}, {}], rows };
+}
+
+function getPreviewMarkdown(table: TableModel): string {
+  const fmt = table.format;
+  if (fmt === 'pipeTable') {
+    const result = serializePipeTable(table);
+    return result.ok ? result.value : `[Error: ${result.message}]`;
+  }
+  if (fmt === 'mdxSpanner') {
+    return serializeMdxSpanner(table);
+  }
+  return serializeSpantable(table);
 }
 
 export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
@@ -59,7 +73,6 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
     setTimeout(() => setErrorMsg(null), 4000);
   }
 
-  // Cell selection
   const handleSelect = useCallback((row: number, col: number, extend: boolean): void => {
     setErrorMsg(null);
     if (!extend || !selection) {
@@ -81,7 +94,6 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
     return row >= minR && row <= maxR && col >= minC && col <= maxC;
   }
 
-  // Cell text change
   const handleTextChange = useCallback((row: number, col: number, text: string): void => {
     setTable(prev => {
       const newRows = prev.rows.map((r, ri) =>
@@ -91,25 +103,30 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
     });
   }, []);
 
-  // Paste from Excel (TSV) — window-level listener so it fires regardless of which element has focus
+  // Paste from Excel (TSV)
   useEffect(() => {
     function handlePaste(e: ClipboardEvent): void {
-      // If a cell input is being edited, let the browser handle it normally (single-cell paste)
       const active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
 
       const tsv = e.clipboardData?.getData('text/plain') ?? '';
-      if (!tsv.includes('\t') && !tsv.includes('\n')) return; // not a grid paste
+      if (!tsv.includes('\t') && !tsv.includes('\n')) return;
       e.preventDefault();
       const parsed = parseTsv(tsv);
-      setTable(prev => normalizeTableModel({ ...parsed, id: prev.id, caption: prev.caption, className: prev.className }));
+      setTable(prev => normalizeTableModel({
+        ...parsed,
+        id: prev.id,
+        format: prev.format,
+        columns: prev.columns,
+        caption: prev.caption,
+        className: prev.className
+      }));
       setSelection(null);
     }
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, []);
 
-  // Add/Delete row/col
   function addRow(): void {
     setTable(prev => {
       const colCount = prev.rows[0]?.length ?? 1;
@@ -139,7 +156,8 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
         ...row,
         { id: `r${r}c${row.length}`, text: '', row: r, col: row.length, rowspan: 1, colspan: 1, hidden: false }
       ]);
-      return { ...prev, rows: newRows };
+      const newColumns = [...prev.columns, {}];
+      return { ...prev, rows: newRows, columns: newColumns };
     });
   }
 
@@ -152,7 +170,8 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
         row.filter((_, c) => c !== targetCol)
           .map((cell, c) => ({ ...cell, col: c }))
       );
-      return normalizeTableModel({ ...prev, rows: newRows });
+      const newColumns = prev.columns.filter((_, c) => c !== targetCol);
+      return normalizeTableModel({ ...prev, rows: newRows, columns: newColumns });
     });
     setSelection(null);
   }
@@ -185,22 +204,38 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
     }
   }
 
+  function handleFormatChange(fmt: TableFormat): void {
+    setTable(prev => ({ ...prev, format: fmt }));
+  }
+
+  function handleColumnAlignChange(colIdx: number, align: CellAlign | undefined): void {
+    setTable(prev => {
+      const newColumns = prev.columns.map((col, i) =>
+        i === colIdx ? { ...col, align } : col
+      );
+      return { ...prev, columns: newColumns };
+    });
+  }
+
   function handleApply(): void {
-    const final: TableModel = { ...table, caption: table.caption, className: table.className };
+    const final: TableModel = { ...table };
     vscode.postMessage({ type: 'apply', table: final });
   }
 
-  const previewMarkdown = showPreview ? serializeSpantable(table) : null;
+  const previewMarkdown = showPreview ? getPreviewMarkdown(table) : null;
+  const colCount = table.rows[0]?.length ?? 0;
 
   return (
     <div>
       <Toolbar
         caption={table.caption ?? ''}
         className={table.className ?? ''}
+        format={table.format}
         showPreview={showPreview}
         errorMsg={errorMsg}
         onCaptionChange={v => setTable(prev => ({ ...prev, caption: v || undefined }))}
         onClassNameChange={v => setTable(prev => ({ ...prev, className: v || undefined }))}
+        onFormatChange={handleFormatChange}
         onAddRow={addRow}
         onDeleteRow={deleteRow}
         onAddCol={addCol}
@@ -210,6 +245,27 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
         onTogglePreview={() => setShowPreview(p => !p)}
         onApply={handleApply}
       />
+
+      {/* Column alignment controls */}
+      {colCount > 0 && (
+        <div className="align-row">
+          {Array.from({ length: colCount }, (_, i) => (
+            <div key={i} className="align-col">
+              <span className="align-label">列{i + 1}</span>
+              {(['', 'left', 'center', 'right'] as const).map(a => (
+                <button
+                  key={a}
+                  className={`align-btn${(table.columns[i]?.align ?? '') === a ? ' align-btn--active' : ''}`}
+                  onClick={() => handleColumnAlignChange(i, a === '' ? undefined : a as CellAlign)}
+                  title={a === '' ? '指定なし' : a}
+                >
+                  {a === '' ? '―' : a === 'left' ? '左' : a === 'center' ? '中' : '右'}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="table-wrapper">
         <table className="editor-table">
