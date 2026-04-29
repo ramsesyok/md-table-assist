@@ -4,11 +4,15 @@
   "description": "Visual editor for neoteroi.spantable Markdown tables in MkDocs Material",
   "version": "0.1.0",
   "publisher": "mkdocs-table-editor",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ramsesyok/mkdocs-table-editor"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": ["Other"],
-  "activationEvents": ["onCommand:tableEditor.open"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [

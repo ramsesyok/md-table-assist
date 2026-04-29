@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 import * as crypto from 'crypto';
-import * as path from 'path';
-import * as fs from 'fs';
 
 import { findTableEditorBlock, TableEditorBlockError } from './markdown-document/findTableEditorBlock';
 import { findSpantableBlock } from './markdown-document/findSpantableBlock';
