@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "label": "npm: build",
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Build extension host and webview"
+    },
+    {
+      "type": "npm",
+      "script": "watch:ext",
+      "label": "npm: watch:ext",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "\\[watch\\]",
+          "endsPattern": "Done in"
+        }
+      }
+    },
+    {
+      "type": "npm",
+      "script": "watch:webview",
+      "label": "npm: watch:webview",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

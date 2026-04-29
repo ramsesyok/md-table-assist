@@ -1,0 +1,20 @@
+# Build output
+out/
+dist/
+
+# Dependencies
+node_modules/
+
+# VSIX packages
+*.vsix
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Editor / OS
+.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/

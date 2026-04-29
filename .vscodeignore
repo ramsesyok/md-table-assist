@@ -1,0 +1,15 @@
+src/**
+node_modules/**
+.vscode/**
+.claude/**
+vite.config.ts
+esbuild.mjs
+tsconfig*.json
+vitest.config.ts
+**/*.test.ts
+**/*.map
+.gitignore
+CLAUDE.md
+requirements.md
+!out/extension.js
+!out/webview/**
