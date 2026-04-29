@@ -14,12 +14,18 @@ body {
 /* Toolbar */
 .toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 6px;
-  align-items: center;
   padding: 6px 0 10px;
   border-bottom: 1px solid var(--vscode-panel-border, #444);
   margin-bottom: 10px;
+}
+
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
 .toolbar button {
@@ -39,6 +45,69 @@ body {
 .toolbar button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+/* Icon buttons */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #ccc);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.icon-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+.icon-btn:active {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #fff);
+}
+
+.icon-btn--apply {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #fff);
+  width: 32px;
+  height: 28px;
+}
+
+.icon-btn--apply:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+/* Tooltip */
+.icon-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--vscode-editorHoverWidget-background, #252526);
+  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
+  border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s 0.4s;
+  z-index: 999;
+}
+
+.icon-btn:hover::after {
+  opacity: 1;
 }
 
 .toolbar-group {
@@ -83,9 +152,9 @@ table.editor-table {
 table.editor-table td,
 table.editor-table th {
   border: 1px solid var(--vscode-panel-border, #555);
-  padding: 2px 4px;
-  min-width: 60px;
-  max-width: 300px;
+  padding: 6px 10px;
+  min-width: 80px;
+  max-width: 400px;
   vertical-align: top;
   position: relative;
   cursor: pointer;
