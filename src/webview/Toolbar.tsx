@@ -101,9 +101,9 @@ const ApplyIcon = () => (
 );
 
 const FORMAT_OPTIONS: { value: TableFormat; label: string }[] = [
-  { value: 'spantable', label: 'spantable' },
-  { value: 'pipeTable', label: 'pipeTable' },
-  { value: 'mdxSpanner', label: 'mdxSpanner' }
+  { value: 'pipeTable', label: 'MkDocs標準' },
+  { value: 'mdxSpanner', label: 'mdxSpanner' },
+  { value: 'spantable', label: 'spantable' }
 ];
 
 export function Toolbar({

@@ -303,7 +303,7 @@ function collectExistingIds(docText: string): string[] {
 function makeEmptyTable(id: string): TableModel {
   return normalizeTableModel({
     id,
-    format: 'spantable',
+    format: 'pipeTable',
     version: 1,
     columns: [{}, {}, {}],
     rows: [

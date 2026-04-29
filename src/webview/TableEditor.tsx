@@ -30,7 +30,7 @@ function makeEmptyTable(): TableModel {
     }
     rows.push(row);
   }
-  return { id: '', format: 'spantable', version: 1, columns: [{}, {}, {}], rows };
+  return { id: '', format: 'pipeTable', version: 1, columns: [{}, {}, {}], rows };
 }
 
 function getPreviewMarkdown(table: TableModel): string {
