@@ -214,49 +214,43 @@ table.editor-table td.merged-source {
   border-radius: 3px;
 }
 
-/* Column alignment controls */
-.align-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 0 8px;
-  border-bottom: 1px solid var(--vscode-panel-border, #444);
-  margin-bottom: 8px;
+/* Column alignment header cells */
+.align-header {
+  border: 1px solid var(--vscode-panel-border, #555);
+  padding: 3px 4px;
+  text-align: center;
+  background: var(--vscode-editor-background, #1e1e1e);
+  white-space: nowrap;
 }
 
-.align-col {
-  display: flex;
+.col-align-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
-}
-
-.align-label {
-  font-size: 11px;
-  color: var(--vscode-descriptionForeground, #aaa);
-  margin-right: 2px;
-  min-width: 20px;
-}
-
-.align-btn {
-  padding: 1px 5px;
-  font-size: 11px;
-  background: var(--vscode-button-secondaryBackground, #3a3d41);
-  color: var(--vscode-button-secondaryForeground, #ccc);
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  color: var(--vscode-descriptionForeground, #888);
   border: 1px solid transparent;
   border-radius: 3px;
   cursor: pointer;
-  line-height: 1.4;
 }
 
-.align-btn:hover {
+.col-align-btn:hover {
   background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  color: var(--vscode-editor-foreground, #ccc);
   border-color: var(--vscode-focusBorder, #007fd4);
 }
 
-.align-btn--active {
+.col-align-btn--active {
   background: var(--vscode-button-background, #0e639c);
   color: var(--vscode-button-foreground, #fff);
   border-color: transparent;
+}
+
+.col-align-btn--active:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
 }
 
 /* Toolbar select */

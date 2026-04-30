@@ -21,6 +21,53 @@ interface TableEditorProps {
   vscode: { postMessage(msg: unknown): void };
 }
 
+const AlignLeftIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+    <rect x="1" y="2" width="12" height="1.5" rx="0.5" />
+    <rect x="1" y="5.5" width="8" height="1.5" rx="0.5" />
+    <rect x="1" y="9" width="10" height="1.5" rx="0.5" />
+    <rect x="1" y="12.5" width="6" height="1.5" rx="0.5" />
+  </svg>
+);
+
+const AlignCenterIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+    <rect x="1" y="2" width="12" height="1.5" rx="0.5" />
+    <rect x="3" y="5.5" width="8" height="1.5" rx="0.5" />
+    <rect x="2" y="9" width="10" height="1.5" rx="0.5" />
+    <rect x="4" y="12.5" width="6" height="1.5" rx="0.5" />
+  </svg>
+);
+
+const AlignRightIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+    <rect x="1" y="2" width="12" height="1.5" rx="0.5" />
+    <rect x="5" y="5.5" width="8" height="1.5" rx="0.5" />
+    <rect x="3" y="9" width="10" height="1.5" rx="0.5" />
+    <rect x="7" y="12.5" width="6" height="1.5" rx="0.5" />
+  </svg>
+);
+
+interface AlignButtonProps {
+  align: CellAlign;
+  active: boolean;
+  onClick: () => void;
+}
+
+function AlignButton({ align, active, onClick }: AlignButtonProps): React.ReactElement {
+  const Icon = align === 'left' ? AlignLeftIcon : align === 'center' ? AlignCenterIcon : AlignRightIcon;
+  const label = align === 'left' ? '左寄せ' : align === 'center' ? '中央' : '右寄せ';
+  return (
+    <button
+      className={`col-align-btn${active ? ' col-align-btn--active' : ''}`}
+      onClick={onClick}
+      title={label}
+    >
+      <Icon />
+    </button>
+  );
+}
+
 function makeEmptyTable(): TableModel {
   const rows: TableCell[][] = [];
   for (let r = 0; r < 3; r++) {
@@ -246,29 +293,34 @@ export function TableEditor({ vscode }: TableEditorProps): React.ReactElement {
         onApply={handleApply}
       />
 
-      {/* Column alignment controls */}
-      {colCount > 0 && (
-        <div className="align-row">
-          {Array.from({ length: colCount }, (_, i) => (
-            <div key={i} className="align-col">
-              <span className="align-label">列{i + 1}</span>
-              {(['', 'left', 'center', 'right'] as const).map(a => (
-                <button
-                  key={a}
-                  className={`align-btn${(table.columns[i]?.align ?? '') === a ? ' align-btn--active' : ''}`}
-                  onClick={() => handleColumnAlignChange(i, a === '' ? undefined : a as CellAlign)}
-                  title={a === '' ? '指定なし' : a}
-                >
-                  {a === '' ? '―' : a === 'left' ? '左' : a === 'center' ? '中' : '右'}
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
       <div className="table-wrapper">
         <table className="editor-table">
+          <thead>
+            <tr>
+              {Array.from({ length: colCount }, (_, i) => {
+                const current = table.columns[i]?.align;
+                return (
+                  <th key={i} className="align-header">
+                    <AlignButton
+                      align="left"
+                      active={current === 'left'}
+                      onClick={() => handleColumnAlignChange(i, current === 'left' ? undefined : 'left')}
+                    />
+                    <AlignButton
+                      align="center"
+                      active={current === 'center'}
+                      onClick={() => handleColumnAlignChange(i, current === 'center' ? undefined : 'center')}
+                    />
+                    <AlignButton
+                      align="right"
+                      active={current === 'right'}
+                      onClick={() => handleColumnAlignChange(i, current === 'right' ? undefined : 'right')}
+                    />
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
           <tbody>
             {table.rows.map((row, rowIdx) => (
               <tr key={rowIdx}>

@@ -12,6 +12,7 @@
   "engines": {
     "vscode": "^1.85.0"
   },
+  "icon": "icon.png",
   "categories": ["Other"],
   "main": "./out/extension.js",
   "contributes": {
