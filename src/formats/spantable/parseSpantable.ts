@@ -46,6 +46,7 @@ export function parseSpantable(source: string, tableId = ''): TableModel {
       version: 1,
       caption,
       className,
+      columns: [],
       rows: []
     };
   }
@@ -119,6 +120,7 @@ export function parseSpantable(source: string, tableId = ''): TableModel {
     version: 1,
     caption,
     className,
+    columns: Array.from({ length: colCount }, () => ({})),
     rows: cells
   };
 }

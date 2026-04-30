@@ -35,6 +35,7 @@ export function parseTsv(tsv: string): TableModel {
     id: '',
     format: 'spantable',
     version: 1,
+    columns: Array.from({ length: colCount }, () => ({})),
     rows
   };
 }
@@ -49,5 +50,5 @@ function makeEmptyModel(): TableModel {
     colspan: 1,
     hidden: false
   }]];
-  return { id: '', format: 'spantable', version: 1, rows };
+  return { id: '', format: 'spantable', version: 1, columns: [{}], rows };
 }

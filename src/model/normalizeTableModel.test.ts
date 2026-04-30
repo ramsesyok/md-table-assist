@@ -7,6 +7,7 @@ function makeModel(rows: Array<Array<{ text: string }>>): TableModel {
     id: 'test',
     format: 'spantable',
     version: 1,
+    columns: [],
     rows: rows.map((row, r) =>
       row.map((cell, c) => ({
         id: `r${r}c${c}`,
@@ -27,6 +28,7 @@ describe('normalizeTableModel', () => {
       id: 'test',
       format: 'spantable',
       version: 1,
+      columns: [],
       rows: [
         [{ id: 'r0c0', text: 'A', row: 0, col: 0, rowspan: 1, colspan: 1, hidden: false },
          { id: 'r0c1', text: 'B', row: 0, col: 1, rowspan: 1, colspan: 1, hidden: false },
@@ -45,6 +47,7 @@ describe('normalizeTableModel', () => {
       id: 'test',
       format: 'spantable',
       version: 1,
+      columns: [],
       rows: [[{ id: '', text: 'X', row: 0, col: 0, rowspan: 1, colspan: 1, hidden: false }]]
     };
     const result = normalizeTableModel(model);
@@ -56,6 +59,7 @@ describe('normalizeTableModel', () => {
       id: 'test',
       format: 'spantable',
       version: 1,
+      columns: [],
       rows: [[{ id: 'r0c0', text: 'X', row: 0, col: 0, rowspan: 0, colspan: -1, hidden: false }]]
     };
     const result = normalizeTableModel(model);
@@ -74,5 +78,47 @@ describe('normalizeTableModel', () => {
     const once = normalizeTableModel(model);
     const twice = normalizeTableModel(once);
     expect(twice).toEqual(once);
+  });
+
+  it('generates columns array from row width when columns is empty', () => {
+    const model = makeModel([[{ text: 'A' }, { text: 'B' }, { text: 'C' }]]);
+    const result = normalizeTableModel(model);
+    expect(result.columns).toHaveLength(3);
+    expect(result.columns[0]).toEqual({});
+  });
+
+  it('preserves existing column alignment', () => {
+    const model: TableModel = {
+      id: 'test',
+      format: 'pipeTable',
+      version: 1,
+      columns: [{ align: 'left' }, { align: 'center' }],
+      rows: [[
+        { id: 'r0c0', text: 'A', row: 0, col: 0, rowspan: 1, colspan: 1, hidden: false },
+        { id: 'r0c1', text: 'B', row: 0, col: 1, rowspan: 1, colspan: 1, hidden: false }
+      ]]
+    };
+    const result = normalizeTableModel(model);
+    expect(result.columns[0].align).toBe('left');
+    expect(result.columns[1].align).toBe('center');
+  });
+
+  it('pads columns array when shorter than row width', () => {
+    const model: TableModel = {
+      id: 'test',
+      format: 'pipeTable',
+      version: 1,
+      columns: [{ align: 'left' }],
+      rows: [[
+        { id: 'r0c0', text: 'A', row: 0, col: 0, rowspan: 1, colspan: 1, hidden: false },
+        { id: 'r0c1', text: 'B', row: 0, col: 1, rowspan: 1, colspan: 1, hidden: false },
+        { id: 'r0c2', text: 'C', row: 0, col: 2, rowspan: 1, colspan: 1, hidden: false }
+      ]]
+    };
+    const result = normalizeTableModel(model);
+    expect(result.columns).toHaveLength(3);
+    expect(result.columns[0].align).toBe('left');
+    expect(result.columns[1]).toEqual({});
+    expect(result.columns[2]).toEqual({});
   });
 });

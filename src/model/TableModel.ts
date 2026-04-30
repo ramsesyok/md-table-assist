@@ -1,3 +1,9 @@
+export type CellAlign = "left" | "center" | "right";
+
+export type TableColumn = {
+  align?: CellAlign;
+};
+
 export type TableCell = {
   id: string;
   text: string;
@@ -7,10 +13,15 @@ export type TableCell = {
   colspan: number;
   hidden: boolean;
   header?: boolean;
-  align?: "left" | "center" | "right";
+  cellAlign?: CellAlign;
 };
 
-export type TableFormat = "spantable" | "gridtable" | "typst";
+export type TableFormat =
+  | "spantable"
+  | "pipeTable"
+  | "mdxSpanner"
+  | "gridTable"
+  | "typst";
 
 export type TableModel = {
   id: string;
@@ -18,6 +29,7 @@ export type TableModel = {
   version: number;
   caption?: string;
   className?: string;
+  columns: TableColumn[];
   rows: TableCell[][];
 };
 

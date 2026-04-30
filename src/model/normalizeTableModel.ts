@@ -1,11 +1,19 @@
-import type { TableModel, TableCell } from './TableModel';
+import type { TableModel, TableCell, TableColumn } from './TableModel';
 
 export function normalizeTableModel(model: TableModel): TableModel {
-  if (model.rows.length === 0) {
-    return { ...model, rows: [] };
-  }
+  // Normalize columns array
+  const colCount = model.rows.length > 0
+    ? Math.max(...model.rows.map(r => r.length))
+    : (model.columns?.length ?? 0);
 
-  const colCount = Math.max(...model.rows.map(r => r.length));
+  const existingColumns: TableColumn[] = model.columns ?? [];
+  const columns: TableColumn[] = Array.from({ length: colCount }, (_, i) =>
+    existingColumns[i] ?? {}
+  );
+
+  if (model.rows.length === 0) {
+    return { ...model, columns, rows: [] };
+  }
 
   const rows: TableCell[][] = model.rows.map((row, rowIdx) => {
     const normalized: TableCell[] = [];
@@ -33,5 +41,5 @@ export function normalizeTableModel(model: TableModel): TableModel {
     return normalized;
   });
 
-  return { ...model, rows };
+  return { ...model, columns, rows };
 }
