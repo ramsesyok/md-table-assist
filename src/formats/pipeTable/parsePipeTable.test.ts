@@ -48,6 +48,32 @@ describe('parsePipeTable', () => {
     expect(result.value.rows[0][0].text).toBe('A|B');
   });
 
+  it('parses GFM tables without leading and trailing pipes', () => {
+    const source = 'A | B | C\n--- | :---: | ---:\nD | E | F';
+    const result = parsePipeTable(source, 'tbl-gfm');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.rows[0][0].text).toBe('A');
+    expect(result.value.rows[1][2].text).toBe('F');
+    expect(result.value.columns[1].align).toBe('center');
+  });
+
+  it('returns error when GFM header and separator cell counts differ', () => {
+    const source = '| A | B |\n| --- |\n| C | D |';
+    const result = parsePipeTable(source, 'tbl-broken');
+    expect(result.ok).toBe(false);
+  });
+
+  it('pads short body rows and ignores excess body cells like GFM', () => {
+    const source = '| A | B |\n| --- | --- |\n| C |\n| D | E | F |';
+    const result = parsePipeTable(source, 'tbl-variable');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.rows[1][1].text).toBe('');
+    expect(result.value.rows[2]).toHaveLength(2);
+    expect(result.value.rows[2][1].text).toBe('E');
+  });
+
   it('returns error for table with fewer than 2 lines', () => {
     const result = parsePipeTable('| A | B |', 'tbl-005');
     expect(result.ok).toBe(false);

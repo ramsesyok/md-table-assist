@@ -7,8 +7,7 @@ export type ParseResult<T> =
 
 export function parsePipeTable(source: string, tableId = ''): ParseResult<TableModel> {
   const allLines = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  // Keep only pipe table lines
-  const lines = allLines.map(l => l.trim()).filter(l => l.startsWith('|') && l.endsWith('|'));
+  const lines = allLines.map(l => l.trim()).filter(l => l.length > 0);
 
   if (lines.length < 2) {
     return { ok: false, message: 'Not a valid pipe table: need at least a header and a separator row' };
@@ -18,11 +17,14 @@ export function parsePipeTable(source: string, tableId = ''): ParseResult<TableM
   const separatorCells = splitCells(lines[1]);
 
   // Validate separator row
-  if (!separatorCells.every(s => /^:?-+:?$/.test(s.trim()))) {
+  if (!separatorCells.every(isSeparatorCell)) {
     return { ok: false, message: 'Not a valid pipe table: second row must be an alignment separator row' };
   }
 
   const colCount = headerCells.length;
+  if (colCount !== separatorCells.length) {
+    return { ok: false, message: 'Not a valid GFM table: header and separator rows must have the same number of cells' };
+  }
 
   const columns: TableColumn[] = Array.from({ length: colCount }, (_, i) => ({
     align: separatorToAlign(separatorCells[i] ?? '')
@@ -72,13 +74,21 @@ export function parsePipeTable(source: string, tableId = ''): ParseResult<TableM
 }
 
 function splitCells(line: string): string[] {
-  // Remove leading and trailing |, then split on |
-  const inner = line.replace(/^\|/, '').replace(/\|$/, '');
-  // Split on | that are not preceded by backslash
+  // GFM allows leading and trailing pipes, but does not require them.
+  const trimmed = line.trim();
+  let inner = trimmed;
+  if (inner.startsWith('|')) {
+    inner = inner.slice(1);
+  }
+  if (inner.endsWith('|') && !isEscaped(inner, inner.length - 1)) {
+    inner = inner.slice(0, -1);
+  }
+
+  // Split on pipes that are not escaped with a backslash.
   const parts: string[] = [];
   let current = '';
   for (let i = 0; i < inner.length; i++) {
-    if (inner[i] === '|' && (i === 0 || inner[i - 1] !== '\\')) {
+    if (inner[i] === '|' && !isEscaped(inner, i)) {
       parts.push(current.trim());
       current = '';
     } else {
@@ -91,4 +101,17 @@ function splitCells(line: string): string[] {
 
 function unescapeCell(text: string): string {
   return text.replace(/\\\|/g, '|');
+}
+
+function isSeparatorCell(text: string): boolean {
+  // GitHub's user-facing docs require at least three hyphens per delimiter cell.
+  return /^:?-{3,}:?$/.test(text.trim());
+}
+
+function isEscaped(text: string, index: number): boolean {
+  let slashCount = 0;
+  for (let i = index - 1; i >= 0 && text[i] === '\\'; i--) {
+    slashCount++;
+  }
+  return slashCount % 2 === 1;
 }
