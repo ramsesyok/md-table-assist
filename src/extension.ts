@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 
 import { findTableEditorBlock, TableEditorBlockError } from './markdown-document/findTableEditorBlock';
 import { findSpantableBlock } from './markdown-document/findSpantableBlock';
+import { findPipeTableBlock } from './markdown-document/findPipeTableBlock';
 import { buildReplacement } from './markdown-document/replaceBlock';
 import { generateTableId } from './markdown-document/generateTableId';
 import { parseSpantable } from './formats/spantable/parseSpantable';
@@ -18,7 +19,7 @@ import type { WebviewToExtensionMessage, ExtensionToWebviewMessage } from './mod
 // Inlined by esbuild loader: { '.html': 'text' }
 import templateHtml from './webview/template.html';
 
-type EditMode = 'new' | 'comment-block' | 'plain-spantable';
+type EditMode = 'new' | 'comment-block' | 'plain-spantable' | 'plain-pipe-table';
 
 interface PanelState {
   sourceStart: number;
@@ -109,16 +110,35 @@ function openTableEditor(context: vscode.ExtensionContext): void {
           format: 'spantable'
         };
       } else {
-        // Priority 3: new empty table
-        const newId = generateTableId(collectExistingIds(docText));
-        table = makeEmptyTable(newId);
-        state = {
-          sourceStart: cursorOffset,
-          sourceEnd: cursorOffset,
-          mode: 'new',
-          tableId: newId,
-          format: 'spantable'
-        };
+        // Priority 3: cursor near a plain GFM pipe table
+        const plainPipeBlock = findPipeTableBlock(docText, cursorOffset);
+        if (plainPipeBlock) {
+          const newId = generateTableId(collectExistingIds(docText));
+          const result = parsePipeTable(plainPipeBlock.content, newId);
+          if (!result.ok) {
+            vscode.window.showErrorMessage(`Failed to parse GitHub Flavored table: ${result.message}`);
+            return;
+          }
+          table = normalizeTableModel(result.value);
+          state = {
+            sourceStart: plainPipeBlock.startOffset,
+            sourceEnd: plainPipeBlock.endOffset,
+            mode: 'plain-pipe-table',
+            tableId: table.id,
+            format: 'pipeTable'
+          };
+        } else {
+          // Priority 4: new empty table
+          const newId = generateTableId(collectExistingIds(docText));
+          table = makeEmptyTable(newId);
+          state = {
+            sourceStart: cursorOffset,
+            sourceEnd: cursorOffset,
+            mode: 'new',
+            tableId: newId,
+            format: 'pipeTable'
+          };
+        }
       }
     }
   } catch (e) {
