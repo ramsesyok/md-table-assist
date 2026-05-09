@@ -1,10 +1,10 @@
 # requirements.md
 
-# MkDocs spantable Table Editor 要件定義
+# Markdown Table Assist 要件定義
 
 ## 1. 目的
 
-本プロジェクトは、MkDocs Material + `neoteroi.spantable` を用いたMarkdown文書作成において、rowspan / colspan を含む表を視覚的に編集できる Visual Studio Code 拡張機能を作成することを目的とする。
+本プロジェクトは、Markdown文書作成において、rowspan / colspan を含む表を視覚的に編集できる Visual Studio Code 拡張機能を作成することを目的とする。初期バージョンでは `neoteroi.spantable` を主な出力形式として扱う。
 
 通常のMarkdown表では、結合セルを扱いにくい。  
 また、`neoteroi.spantable` は結合セルを表現できるが、Markdownを手書きで編集するには負担が大きい。
@@ -44,12 +44,12 @@
 
 ## 3. 想定ユーザー
 
-主なユーザーは、MkDocs Materialで技術文書を作成する開発者・技術文書作成者とする。
+主なユーザーは、Markdownで技術文書を作成する開発者・技術文書作成者とする。
 
 特に以下のようなユーザーを想定する。
 
 - Markdownで技術文書を作成している
-- MkDocs Materialを利用している
+- MkDocs Materialなど、Markdownベースのドキュメント環境を利用している
 - 結合セルを含む表を作成したい
 - 表キャプション付きの表を作成したい
 - Excelで表の下書きを作ることに慣れている

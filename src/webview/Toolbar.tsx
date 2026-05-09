@@ -101,7 +101,7 @@ const ApplyIcon = () => (
 );
 
 const FORMAT_OPTIONS: { value: TableFormat; label: string }[] = [
-  { value: 'pipeTable', label: 'MkDocs標準' },
+  { value: 'pipeTable', label: 'Markdown標準' },
   { value: 'mdxSpanner', label: 'mdxSpanner' },
   { value: 'spantable', label: 'spantable' }
 ];

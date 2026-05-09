@@ -1,6 +1,6 @@
-# MkDocs Table Editor
+# Markdown Table Assist
 
-Visual editor for [`neoteroi.spantable`](https://www.neoteroi.dev/mkdocs-plugins/spantable/) Markdown tables in MkDocs Material documentation.
+Visual editor for Markdown tables, with first-class support for [`neoteroi.spantable`](https://www.neoteroi.dev/mkdocs-plugins/spantable/).
 
 Rowspan / colspan を含む表を、セルを結合・分割しながら視覚的に編集し、`spantable` 形式の Markdown を生成します。
 
@@ -25,7 +25,7 @@ Rowspan / colspan を含む表を、セルを結合・分割しながら視覚�
 ### 新規テーブルを作成する
 
 1. `.md` ファイルを開く
-2. 右クリックメニューから **Table Editor: Open Table Editor** を選択（またはコマンドパレットで `Table Editor: Open Table Editor`）
+2. 右クリックメニューから **Markdown Table Assist: Open Markdown Table Assist** を選択（またはコマンドパレットで `Markdown Table Assist: Open Markdown Table Assist`）
 3. 表が表示されたら、Excel からデータを貼り付けるか、セルを直接編集する
 4. セルを結合するには範囲をクリック+Shiftクリックで選択し、**Merge** ボタンを押す
 5. **Apply** ボタンを押すと、カーソル位置に `spantable` ブロックが挿入される
@@ -33,7 +33,7 @@ Rowspan / colspan を含む表を、セルを結合・分割しながら視覚�
 ### 既存テーブルを再編集する
 
 1. Markdown ファイル内の `<!-- table-editor:start ... -->` ブロックの中にカーソルを置く
-2. 右クリックメニューまたはコマンドパレットから **Open Table Editor** を実行
+2. 右クリックメニューまたはコマンドパレットから **Open Markdown Table Assist** を実行
 3. テーブルが読み込まれるので編集し、**Apply** で上書きする
 
 ### 既存の `::spantable::` ブロックを取り込む
