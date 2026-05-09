@@ -140,7 +140,7 @@ function createWebviewPanel(
 ): void {
   const panel = vscode.window.createWebviewPanel(
     'tableEditor',
-    'Table Editor',
+    'Markdown Table Assist',
     vscode.ViewColumn.Beside,
     {
       enableScripts: true,
@@ -188,7 +188,7 @@ function createWebviewPanel(
       }
 
       if (message.type === 'error') {
-        vscode.window.showErrorMessage(`Table Editor: ${message.message}`);
+        vscode.window.showErrorMessage(`Markdown Table Assist: ${message.message}`);
         return;
       }
     },

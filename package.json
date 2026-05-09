@@ -1,13 +1,13 @@
 {
-  "name": "mkdocs-table-editor",
-  "displayName": "MkDocs Table Editor",
-  "description": "Visual editor for neoteroi.spantable Markdown tables in MkDocs Material",
+  "name": "md-table-assist",
+  "displayName": "Markdown Table Assist",
+  "description": "Visual editor for Markdown tables with neoteroi.spantable support",
   "version": "0.1.0",
-  "publisher": "mkdocs-table-editor",
+  "publisher": "ramsesyok",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ramsesyok/mkdocs-table-editor"
+    "url": "https://github.com/ramsesyok/md-table-assist"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -21,8 +21,8 @@
     "commands": [
       {
         "command": "tableEditor.open",
-        "title": "Open Table Editor",
-        "category": "Table Editor"
+        "title": "Open Markdown Table Assist",
+        "category": "Markdown Table Assist"
       }
     ],
     "menus": {
