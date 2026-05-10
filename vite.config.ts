@@ -19,7 +19,12 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name].[ext]'
+        assetFileNames: assetInfo => {
+          if (assetInfo.names?.some(name => name.endsWith('.css'))) {
+            return 'assets/style.css'
+          }
+          return 'assets/[name].[ext]'
+        }
       }
     },
     minify: process.env.NODE_ENV === 'production' ? 'esbuild' : false,

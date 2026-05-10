@@ -47,6 +47,11 @@ body {
   cursor: default;
 }
 
+.toolbar button:disabled:hover {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  border-color: transparent;
+}
+
 /* Icon buttons */
 .icon-btn {
   display: inline-flex;
@@ -136,6 +141,11 @@ body {
   border-radius: 2px;
   font-size: 12px;
   width: 160px;
+}
+
+.toolbar input[type="text"]:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 /* Table */

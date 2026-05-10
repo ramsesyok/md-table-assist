@@ -94,9 +94,12 @@ const EyeOffIcon = () => (
   </svg>
 );
 
-const ApplyIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="2.5,8.5 6.5,12.5 13.5,4" />
+const SaveIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2.5 2.5h9l2 2v9h-11z" />
+    <path d="M5 2.5v4h5.5v-4" />
+    <path d="M5 13.5v-4h6v4" />
+    <path d="M9.5 2.5v2.5" />
   </svg>
 );
 
@@ -112,28 +115,12 @@ export function Toolbar({
   onAddRow, onDeleteRow, onAddCol, onDeleteCol,
   onMerge, onUnmerge, onTogglePreview, onApply
 }: ToolbarProps): React.ReactElement {
+  const disablesExtendedTableOptions = format === 'pipeTable';
+
   return (
     <div>
       <div className="toolbar">
         <div className="toolbar-row">
-          <div className="toolbar-group">
-            <label>Caption:</label>
-            <input
-              type="text"
-              value={caption}
-              onChange={e => onCaptionChange(e.target.value)}
-              placeholder="Table caption"
-            />
-          </div>
-          <div className="toolbar-group">
-            <label>Class:</label>
-            <input
-              type="text"
-              value={className}
-              onChange={e => onClassNameChange(e.target.value)}
-              placeholder="CSS class"
-            />
-          </div>
           <div className="toolbar-group">
             <label>Format:</label>
             <select
@@ -144,6 +131,26 @@ export function Toolbar({
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
+          </div>
+          <div className="toolbar-group">
+            <label>Caption:</label>
+            <input
+              type="text"
+              value={caption}
+              onChange={e => onCaptionChange(e.target.value)}
+              placeholder="Table caption"
+              disabled={disablesExtendedTableOptions}
+            />
+          </div>
+          <div className="toolbar-group">
+            <label>Class:</label>
+            <input
+              type="text"
+              value={className}
+              onChange={e => onClassNameChange(e.target.value)}
+              placeholder="CSS class"
+              disabled={disablesExtendedTableOptions}
+            />
           </div>
         </div>
 
@@ -166,10 +173,10 @@ export function Toolbar({
           <div className="toolbar-sep" />
 
           <div className="toolbar-group">
-            <button className="icon-btn" onClick={onMerge} data-tooltip="セルを結合">
+            <button className="icon-btn" onClick={onMerge} data-tooltip="セルを結合" disabled={disablesExtendedTableOptions}>
               <MergeIcon />
             </button>
-            <button className="icon-btn" onClick={onUnmerge} data-tooltip="結合を解除">
+            <button className="icon-btn" onClick={onUnmerge} data-tooltip="結合を解除" disabled={disablesExtendedTableOptions}>
               <UnmergeIcon />
             </button>
           </div>
@@ -187,9 +194,9 @@ export function Toolbar({
             <button
               className="icon-btn icon-btn--apply"
               onClick={onApply}
-              data-tooltip="ドキュメントに適用"
+              data-tooltip="ドキュメントに保存"
             >
-              <ApplyIcon />
+              <SaveIcon />
             </button>
           </div>
         </div>
