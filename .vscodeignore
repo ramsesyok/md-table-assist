@@ -1,3 +1,4 @@
+.github/**
 src/**
 node_modules/**
 .vscode/**
@@ -8,6 +9,7 @@ tsconfig*.json
 vitest.config.ts
 **/*.test.ts
 **/*.map
+*.vsix
 .gitignore
 CLAUDE.md
 requirements.md
