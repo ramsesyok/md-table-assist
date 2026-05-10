@@ -2,7 +2,7 @@
   "name": "md-table-assist",
   "displayName": "Markdown Table Assist",
   "description": "Visual editor for Markdown tables with neoteroi.spantable support",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "ramsesyok",
   "license": "MIT",
   "repository": {
